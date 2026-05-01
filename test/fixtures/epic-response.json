@@ -1,0 +1,148 @@
+{
+  "data": {
+    "Catalog": {
+      "searchStore": {
+        "elements": [
+          {
+            "title": "Active Free Game",
+            "id": "elem-active-1",
+            "namespace": "ns-active",
+            "offerType": "BASE_GAME",
+            "productSlug": "active-free-game",
+            "catalogNs": {
+              "mappings": [
+                { "pageType": "productHome", "pageSlug": "active-free-game" }
+              ]
+            },
+            "offerMappings": [],
+            "price": {
+              "totalPrice": {
+                "originalPrice": 1980,
+                "discountPrice": 0,
+                "currencyCode": "JPY"
+              }
+            },
+            "promotions": {
+              "promotionalOffers": [
+                {
+                  "promotionalOffers": [
+                    {
+                      "startDate": "2026-04-30T15:00:00.000Z",
+                      "endDate": "2026-05-07T15:00:00.000Z",
+                      "discountSetting": { "discountPercentage": 0 }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "title": "Two Promo Element",
+            "id": "elem-multi",
+            "namespace": "ns-multi",
+            "offerType": "BASE_GAME",
+            "productSlug": "two-promo",
+            "price": {
+              "totalPrice": {
+                "originalPrice": 2500,
+                "discountPrice": 0,
+                "currencyCode": "JPY"
+              }
+            },
+            "promotions": {
+              "promotionalOffers": [
+                {
+                  "promotionalOffers": [
+                    {
+                      "startDate": "2026-04-30T15:00:00.000Z",
+                      "endDate": "2026-05-03T15:00:00.000Z",
+                      "discountSetting": { "discountPercentage": 0 }
+                    },
+                    {
+                      "startDate": "2026-05-10T15:00:00.000Z",
+                      "endDate": "2026-05-17T15:00:00.000Z",
+                      "discountSetting": { "discountPercentage": 0 }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "title": "Slug From CatalogNs",
+            "id": "elem-slug",
+            "namespace": "ns-slug",
+            "offerType": "BASE_GAME",
+            "catalogNs": {
+              "mappings": [
+                { "pageType": "productHome", "pageSlug": "from-catalog-ns/home" }
+              ]
+            },
+            "price": {
+              "totalPrice": {
+                "originalPrice": 990,
+                "discountPrice": 0,
+                "currencyCode": "JPY"
+              }
+            },
+            "promotions": {
+              "promotionalOffers": [
+                {
+                  "promotionalOffers": [
+                    {
+                      "startDate": "2026-04-30T15:00:00.000Z",
+                      "endDate": "2026-05-07T15:00:00.000Z",
+                      "discountSetting": { "discountPercentage": 0 }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "title": "No Promotion Element",
+            "id": "elem-nopromo",
+            "namespace": "ns-nopromo",
+            "offerType": "BASE_GAME",
+            "productSlug": "no-promo",
+            "price": {
+              "totalPrice": {
+                "originalPrice": 1000,
+                "discountPrice": 1000,
+                "currencyCode": "JPY"
+              }
+            },
+            "promotions": null
+          },
+          {
+            "title": "Free DLC",
+            "id": "elem-dlc",
+            "namespace": "ns-dlc",
+            "offerType": "ADD_ON",
+            "productSlug": "free-dlc",
+            "price": {
+              "totalPrice": {
+                "originalPrice": 500,
+                "discountPrice": 0,
+                "currencyCode": "JPY"
+              }
+            },
+            "promotions": {
+              "promotionalOffers": [
+                {
+                  "promotionalOffers": [
+                    {
+                      "startDate": "2026-04-30T15:00:00.000Z",
+                      "endDate": "2026-05-07T15:00:00.000Z",
+                      "discountSetting": { "discountPercentage": 0 }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
