@@ -3,8 +3,12 @@
 // and map it to the internal Offer shape. Free/non-free judgement is the
 // caller's responsibility (see RCM-64).
 
+// Canonical Epic free-games endpoint that has been stable across years of
+// public Epic Store integrations. The earlier `-ipv4` host with the
+// `ByLocale` path returned 502/404 from real clients (locale is passed as a
+// query param here, not a path segment).
 const DEFAULT_ENDPOINT =
-  "https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotionsByLocale";
+  "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions";
 const DEFAULT_STORE_BASE = "https://store.epicgames.com";
 const USER_AGENT =
   "epic-games-slack-notification/0.1 (+https://github.com/racoma-dev/epic-games-slack-notification)";
