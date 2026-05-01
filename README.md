@@ -20,16 +20,21 @@ Epic Games Store の無料配布（週次・24h・72h 限定含む）を GitHub 
 - Node.js 20 以上（`actions/setup-node` で固定）
 - 外部依存は最小限。Node.js 標準の `fetch` を優先。
 
-## セットアップ（後続タスクで肉付け）
+## セットアップ
 
 1. リポジトリを clone
 2. GitHub Secrets に `SLACK_WEBHOOK_URL` を登録
-3. （任意）Variables / 環境変数を設定
+3. （任意）Variables を設定
    - `EPIC_LOCALE`（既定 `ja-JP`）
    - `EPIC_COUNTRY`（既定 `JP`）
    - `NOTIFY_UPCOMING`（既定 `false`）
    - `INCLUDE_ADDONS`（既定 `true`）
-   - `STATE_FILE`（任意）
+
+## CI 動作
+
+`.github/workflows/epic-free-games-notifier.yml` が UTC `7,22,37,52 * * * *`（15 分間隔）で自動実行。Actions タブから手動実行も可能（`workflow_dispatch`）。同時実行は `concurrency` で抑止される。新規通知が成功した実行では `data/seen-epic-offers.json` を main にコミットして次回以降の重複通知を防止する（差分が無ければ commit しない）。
+
+> Public repo の場合、60 日アクティビティが無いと scheduled workflow が GitHub 側で停止される点に注意。
 
 ## ローカル実行
 

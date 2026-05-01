@@ -1,0 +1,68 @@
+name: epic-free-games-notifier
+
+on:
+  schedule:
+    # UTC. Every 15 min, offset from :00 to dodge the cron-rush spike that
+    # frequently delays GitHub-hosted runners.
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+# FR-1: do not run two instances in parallel. Queue rather than cancel so a
+# Slack notification that's already in flight is allowed to finish.
+concurrency:
+  group: epic-free-games-notifier
+  cancel-in-progress: false
+
+# Needed by the state-commit step below.
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run notifier
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          EPIC_LOCALE: ${{ vars.EPIC_LOCALE || 'ja-JP' }}
+          EPIC_COUNTRY: ${{ vars.EPIC_COUNTRY || 'JP' }}
+          INCLUDE_ADDONS: ${{ vars.INCLUDE_ADDONS || 'true' }}
+          NOTIFY_UPCOMING: ${{ vars.NOTIFY_UPCOMING || 'false' }}
+        run: npm run check
+
+      # Persist state ONLY when something actually changed. `if: always()`
+      # because the script may exit 1 on partial Slack failures while still
+      # having recorded the successful sends — we want those persisted.
+      # Restricted to main so workflow_dispatch on a feature branch never
+      # writes state to that branch.
+      - name: Commit state file if changed
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain data/seen-epic-offers.json)" ]; then
+            echo "No state changes."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/seen-epic-offers.json
+          git commit -m "chore(state): update seen-epic-offers [skip ci]"
+          # Rebase + retry to absorb any concurrent push to main during the
+          # same window. This step is the one place where two cron runs (or
+          # a manual run + cron) can collide on the state file.
+          for attempt in 1 2 3; do
+            if git pull --rebase origin "${GITHUB_REF_NAME}" \
+              && git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "::error::Failed to push state after 3 retries"
+          exit 1
