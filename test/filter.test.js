@@ -14,6 +14,7 @@ const baseFree = {
   currencyCode: "JPY",
   discountPercentage: 0,
   offerType: "BASE_GAME",
+  categoryPaths: ["games/edition/base"],
 };
 
 test("filter: passes a currently-active free offer", () => {
@@ -58,19 +59,42 @@ test("filter: excludes permanent free-to-play (originalPrice == 0)", () => {
   assert.equal(filterCurrentFreeOffers([f2p], { now: NOW }).length, 0);
 });
 
-test("filter: includes DLC by default (includeAddons=true)", () => {
-  const dlc = { ...baseFree, offerId: "D", offerType: "ADD_ON" };
+test("filter: excludes DLC by default", () => {
+  const dlc = {
+    ...baseFree,
+    offerId: "D",
+    offerType: "ADD_ON",
+    categoryPaths: ["addons"],
+  };
   const out = filterCurrentFreeOffers([baseFree, dlc], { now: NOW });
-  assert.deepEqual(out.map((o) => o.offerId).sort(), ["A", "D"]);
+  assert.deepEqual(out.map((o) => o.offerId), ["A"]);
 });
 
-test("filter: excludes DLC and BUNDLE when includeAddons=false", () => {
-  const dlc = { ...baseFree, offerId: "D", offerType: "ADD_ON" };
-  const bundle = { ...baseFree, offerId: "B", offerType: "BUNDLE" };
-  const out = filterCurrentFreeOffers([baseFree, dlc, bundle], {
-    now: NOW,
-    config: { includeAddons: false },
-  });
+test("filter: includes game bundles by category path", () => {
+  const bundle = {
+    ...baseFree,
+    offerId: "B",
+    offerType: "BUNDLE",
+    categoryPaths: ["bundles/games"],
+  };
+  const out = filterCurrentFreeOffers([baseFree, bundle], { now: NOW });
+  assert.deepEqual(out.map((o) => o.offerId).sort(), ["A", "B"]);
+});
+
+test("filter: excludes DLC and add-on bundles even when they are free", () => {
+  const dlc = {
+    ...baseFree,
+    offerId: "D",
+    offerType: "ADD_ON",
+    categoryPaths: ["addons"],
+  };
+  const addonBundle = {
+    ...baseFree,
+    offerId: "B",
+    offerType: "BUNDLE",
+    categoryPaths: ["bundles/addons"],
+  };
+  const out = filterCurrentFreeOffers([baseFree, dlc, addonBundle], { now: NOW });
   assert.deepEqual(out.map((o) => o.offerId), ["A"]);
 });
 

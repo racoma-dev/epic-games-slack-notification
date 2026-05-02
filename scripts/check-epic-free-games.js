@@ -22,7 +22,7 @@ import { notifyOffers } from "./lib/notifier.js";
 async function main() {
   const locale = process.env.EPIC_LOCALE || "ja-JP";
   const country = process.env.EPIC_COUNTRY || "JP";
-  const includeAddons = parseBool(process.env.INCLUDE_ADDONS, true);
+  const includeAddons = parseBool(process.env.INCLUDE_ADDONS, false);
   const notifyUpcoming = parseBool(process.env.NOTIFY_UPCOMING, false);
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   const statePath = process.env.STATE_FILE || DEFAULT_STATE_PATH;

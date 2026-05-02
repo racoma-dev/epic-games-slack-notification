@@ -1,12 +1,13 @@
 # epic-games-slack-notification
 
-Epic Games Store の無料配布（週次・24h・72h 限定含む）を GitHub Actions の cron で 15 分ごとに監視し、**新規検知のみ** Slack に通知する MVP。
+Epic Games Store の無料配布（週次・24h・72h 限定含む）を GitHub Actions の cron で 15 分ごとに監視し、**通常は有料だが現在無料になっているPCゲームの新規検知のみ** Slack に通知する MVP。
 
 要件詳細は Linear の [Requirements ドキュメント](https://linear.app/racoma-dev/document/requirements-b5aeb97f7809) を参照。
 
 ## 主な機能
 
 - **15 分間隔の自動監視** — GitHub Actions cron + 手動実行 (`workflow_dispatch`)
+- **通常有料のPCゲームのみ通知** — `originalPrice > 0` かつ `discountPrice === 0` のゲーム本体 / ゲームバンドルを対象にし、常設 Free-to-Play と DLC / Add-on は除外
 - **重複通知防止** — `offerId|startDate|endDate` をキーに通知済みを記録、再通知は再プロモ（期間変更）時のみ
 - **JST 表示** — Slack 上では日時を `Asia/Tokyo` で描画、内部処理は UTC のまま
 - **失敗時 retry セーフ** — Slack 投稿に失敗した offer は state に記録されないので、次回 cron で自動再試行
@@ -87,7 +88,7 @@ scripts/check-epic-free-games.js   ← エントリポイント
 | ----------------- | ------- | ----------------------------------------------------------------------------------- |
 | `EPIC_LOCALE`     | `ja-JP` | Epic API に渡す locale。Slack のタイトル文字列に影響                                |
 | `EPIC_COUNTRY`    | `JP`    | Epic API に渡す国コード。価格通貨に影響                                             |
-| `INCLUDE_ADDONS`  | `true`  | DLC・バンドル（`ADD_ON` / `BUNDLE`）も通知対象に含めるか                            |
+| `INCLUDE_ADDONS`  | `false` | DLC・Add-on も通知対象に含めるか。通常運用では `false` 推奨                         |
 | `NOTIFY_UPCOMING` | `false` | MVP では未使用（公開予定の offer 通知用フラグ、将来拡張）                           |
 
 > `STATE_FILE` 環境変数で state ファイルのパスを差し替えることもできますが、CI 上では既定の `data/seen-epic-offers.json` を使ってください（commit/push 経路がこのパス前提）。
@@ -119,6 +120,12 @@ scripts/check-epic-free-games.js   ← エントリポイント
   - メッセージに `[skip ci]` 付与
   - `main` ブランチでの実行のみ実施（feature ブランチでの dispatch 時は state を書かない）
 - **失敗時**: スクリプトが exit 1 を返すと workflow も赤くなる。Actions タブのログで原因追跡可能
+
+### 検知対象と既知の制約
+
+検知対象は Epic の `freeGamesPromotions` endpoint に載る offer のうち、現在 promotion 期間内で、通常価格が 0 より大きく、現在価格が 0 のPCゲーム本体またはゲームバンドルです。`Firestone Online Idle RPG` のような常設 Free-to-Play、DLC、Add-on、期限切れ、公開予定のみの offer は通知しません。
+
+Mega Sale 経由の `-100%` 配布（例: Hogwarts Legacy）は、現在利用している `freeGamesPromotions` endpoint に載らない場合があります。これらは Cloudflare 配下の別 endpoint でしか確認できないため、MVP では検知対象外です。
 
 ### テスト workflow (`test.yml`)
 
@@ -179,7 +186,7 @@ npm test
 ## 開発
 
 ```sh
-# テスト一括実行（70 ケース・~270ms）
+# テスト一括実行（72 ケース・~270ms）
 npm test
 
 # 構文チェックのみ

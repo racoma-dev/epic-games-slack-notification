@@ -26,6 +26,7 @@ const USER_AGENT =
  * @property {number|null} discountPercentage  Epic semantics: 0 = fully discounted
  * @property {string} url
  * @property {string} offerType          BASE_GAME | ADD_ON | BUNDLE | ...
+ * @property {string[]} categoryPaths    Epic category paths used for game/add-on gating
  */
 
 /**
@@ -151,6 +152,7 @@ function buildOffer(el, promo, { locale, storeBase }) {
     discountPercentage: numericOrNull(promo?.discountSetting?.discountPercentage),
     url: buildStoreUrl(el, locale, storeBase),
     offerType: String(el?.offerType ?? "UNKNOWN"),
+    categoryPaths: categoryPaths(el?.categories),
   };
 }
 
@@ -187,6 +189,13 @@ function numericOrNull(v) {
 
 function stringOrNull(v) {
   return typeof v === "string" && v.length > 0 ? v : null;
+}
+
+function categoryPaths(categories) {
+  if (!Array.isArray(categories)) return [];
+  return categories
+    .map((category) => category?.path)
+    .filter((path) => typeof path === "string" && path.length > 0);
 }
 
 async function safeReadText(response) {
