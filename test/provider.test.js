@@ -43,6 +43,14 @@ test("provider: mapToOffers preserves offerType so the filter can gate DLC/BUNDL
   assert.equal(dlc.offerType, "ADD_ON");
 });
 
+test("provider: mapToOffers preserves category paths so the filter can identify PC games", async () => {
+  const offers = mapToOffers(await loadFixture(), { logger: silentLogger });
+  const active = offers.find((o) => o.title === "Active Free Game");
+  const dlc = offers.find((o) => o.title === "Free DLC");
+  assert.deepEqual(active.categoryPaths, ["games/edition/base"]);
+  assert.deepEqual(dlc.categoryPaths, ["addons"]);
+});
+
 test("provider: mapToOffers builds store URL from productSlug", async () => {
   const offers = mapToOffers(await loadFixture(), { logger: silentLogger });
   const active = offers.find((o) => o.title === "Active Free Game");

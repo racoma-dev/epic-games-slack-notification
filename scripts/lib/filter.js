@@ -9,7 +9,7 @@
 
 /**
  * @typedef {Object} FilterConfig
- * @property {boolean} [includeAddons=true]   Include ADD_ON / BUNDLE offers when true.
+ * @property {boolean} [includeAddons=false]  Include ADD_ON offers when true.
  * @property {boolean} [notifyUpcoming=false] Reserved for future use; MVP emits only active.
  */
 
@@ -18,11 +18,10 @@
  *
  * Rules:
  *   - Active window:  startDate <= now < endDate
- *   - Effectively free: Epic's discountPercentage === 0 (their semantics: 0 = fully
- *                       discounted) OR discountPrice === 0
- *   - Excludes permanent free-to-play titles (originalPrice <= 0) — those are
- *     not promotions
- *   - When includeAddons is false, only BASE_GAME offers pass
+ *   - Usually paid: originalPrice > 0
+ *   - Currently free: discountPrice === 0
+ *   - PC game: games/edition/base or bundles/games category path
+ *   - Excludes DLC / add-ons by default
  *
  * @param {Offer[]} offers
  * @param {Object} [params]
@@ -35,7 +34,7 @@ export function filterCurrentFreeOffers(
   { now = new Date(), config = {} } = {},
 ) {
   if (!Array.isArray(offers)) return [];
-  const includeAddons = config.includeAddons ?? true;
+  const includeAddons = config.includeAddons ?? false;
   const nowMs = toMs(now);
   if (!Number.isFinite(nowMs)) return [];
 
@@ -55,19 +54,15 @@ function isCurrentlyActive(offer, nowMs) {
 }
 
 function isEffectivelyFree(offer) {
-  // Permanent F2P sentinel: a real promotion implies a non-zero list price.
-  if (typeof offer?.originalPrice === "number" && offer.originalPrice <= 0) {
-    return false;
-  }
-  if (offer?.discountPercentage === 0) return true;
-  if (typeof offer?.discountPrice === "number" && offer.discountPrice === 0) {
-    return true;
-  }
-  return false;
+  return offer?.originalPrice > 0 && offer?.discountPrice === 0;
 }
 
 function isAllowedType(offer, includeAddons) {
-  if (includeAddons) return true;
+  const paths = Array.isArray(offer?.categoryPaths) ? offer.categoryPaths : [];
+  if (paths.includes("games/edition/base")) return true;
+  if (paths.includes("bundles/games")) return true;
+  if (includeAddons && offer?.offerType === "ADD_ON") return true;
+  if (paths.length > 0) return false;
   return offer?.offerType === "BASE_GAME";
 }
 

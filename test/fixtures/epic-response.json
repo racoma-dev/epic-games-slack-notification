@@ -8,6 +8,9 @@
             "id": "elem-active-1",
             "namespace": "ns-active",
             "offerType": "BASE_GAME",
+            "categories": [
+              { "path": "games/edition/base" }
+            ],
             "productSlug": "active-free-game",
             "catalogNs": {
               "mappings": [
@@ -41,6 +44,9 @@
             "id": "elem-multi",
             "namespace": "ns-multi",
             "offerType": "BASE_GAME",
+            "categories": [
+              { "path": "games/edition/base" }
+            ],
             "productSlug": "two-promo",
             "price": {
               "totalPrice": {
@@ -73,6 +79,9 @@
             "id": "elem-slug",
             "namespace": "ns-slug",
             "offerType": "BASE_GAME",
+            "categories": [
+              { "path": "games/edition/base" }
+            ],
             "catalogNs": {
               "mappings": [
                 { "pageType": "productHome", "pageSlug": "from-catalog-ns/home" }
@@ -104,6 +113,9 @@
             "id": "elem-nopromo",
             "namespace": "ns-nopromo",
             "offerType": "BASE_GAME",
+            "categories": [
+              { "path": "games/edition/base" }
+            ],
             "productSlug": "no-promo",
             "price": {
               "totalPrice": {
@@ -119,6 +131,9 @@
             "id": "elem-dlc",
             "namespace": "ns-dlc",
             "offerType": "ADD_ON",
+            "categories": [
+              { "path": "addons" }
+            ],
             "productSlug": "free-dlc",
             "price": {
               "totalPrice": {

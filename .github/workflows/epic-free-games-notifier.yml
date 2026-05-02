@@ -33,7 +33,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           EPIC_LOCALE: ${{ vars.EPIC_LOCALE || 'ja-JP' }}
           EPIC_COUNTRY: ${{ vars.EPIC_COUNTRY || 'JP' }}
-          INCLUDE_ADDONS: ${{ vars.INCLUDE_ADDONS || 'true' }}
+          INCLUDE_ADDONS: ${{ vars.INCLUDE_ADDONS || 'false' }}
           NOTIFY_UPCOMING: ${{ vars.NOTIFY_UPCOMING || 'false' }}
         run: npm run check
 
