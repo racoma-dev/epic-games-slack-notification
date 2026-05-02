@@ -18,6 +18,7 @@ import {
   DEFAULT_STATE_PATH,
 } from "./lib/state.js";
 import { notifyOffers } from "./lib/notifier.js";
+import { errorLayer, redactSecrets } from "./lib/errors.js";
 
 async function main() {
   const locale = process.env.EPIC_LOCALE || "ja-JP";
@@ -72,6 +73,14 @@ function parseBool(value, fallback) {
 }
 
 main().catch((err) => {
-  console.error(err?.stack ?? err?.message ?? err);
+  // Attribute by layer so a CI log search like `[check] fetch layer` finds
+  // every fetch-time failure regardless of message phrasing. Redact the
+  // webhook URL defensively in case any platform error surfaced it.
+  const layer = errorLayer(err);
+  const detail = redactSecrets(
+    err?.stack ?? err?.message ?? err,
+    process.env.SLACK_WEBHOOK_URL,
+  );
+  console.error(`[check] ${layer} layer error:\n${detail}`);
   process.exit(1);
 });

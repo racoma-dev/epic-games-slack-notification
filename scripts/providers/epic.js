@@ -2,6 +2,12 @@
 // Requirements FR-2: fetch free-promotion data for the given locale/country
 // and map it to the internal Offer shape. Free/non-free judgement is the
 // caller's responsibility (see RCM-64).
+//
+// Errors are layer-tagged per RCM-68: transport / HTTP failures throw
+// `EpicFetchError`, parse / shape failures throw `EpicResponseError`. The
+// entry point reports the layer to CI without string-matching message bodies.
+
+import { EpicFetchError, EpicResponseError } from "../lib/errors.js";
 
 // Canonical Epic free-games endpoint that has been stable across years of
 // public Epic Store integrations. The earlier `-ipv4` host with the
@@ -63,9 +69,10 @@ export async function fetchEpicFreeOffers({
     });
   } catch (err) {
     logger.error(`[epic-provider] fetch failed: ${err?.message ?? err}`);
-    throw new Error(`Epic API request failed: ${err?.message ?? err}`, {
-      cause: err,
-    });
+    throw new EpicFetchError(
+      `Epic API request failed: ${err?.message ?? err}`,
+      { cause: err },
+    );
   }
 
   if (!response.ok) {
@@ -73,7 +80,7 @@ export async function fetchEpicFreeOffers({
     logger.error(
       `[epic-provider] HTTP ${response.status} ${response.statusText}: ${body.slice(0, 500)}`,
     );
-    throw new Error(`Epic API returned HTTP ${response.status}`);
+    throw new EpicFetchError(`Epic API returned HTTP ${response.status}`);
   }
 
   let json;
@@ -81,9 +88,10 @@ export async function fetchEpicFreeOffers({
     json = await response.json();
   } catch (err) {
     logger.error(`[epic-provider] JSON parse failed: ${err?.message ?? err}`);
-    throw new Error(`Failed to parse Epic API response: ${err?.message ?? err}`, {
-      cause: err,
-    });
+    throw new EpicResponseError(
+      `Failed to parse Epic API response: ${err?.message ?? err}`,
+      { cause: err },
+    );
   }
 
   return mapToOffers(json, { locale, storeBase, logger });
@@ -109,7 +117,7 @@ export function mapToOffers(
     logger.error(
       "[epic-provider] Unexpected response shape: data.Catalog.searchStore.elements is not an array",
     );
-    throw new Error("Unexpected Epic API response shape");
+    throw new EpicResponseError("Unexpected Epic API response shape");
   }
 
   const offers = [];
