@@ -4,8 +4,13 @@
 // only the rendered message uses Asia/Tokyo. Returns per-offer success so
 // the caller can persist state only for confirmed sends (FR-7).
 //
-// The webhook URL must NEVER be logged (NFR-3) — the helpers below intentionally
-// log only the offer title and HTTP status.
+// The webhook URL must NEVER be logged (NFR-3). We don't log it intentionally,
+// but transport errors thrown by `fetch()` can embed the request URL in their
+// message on some platforms — every catch path runs through `redactSecrets`
+// before logging. Failed sends are surfaced as `SlackNotifyError` so the
+// entry point can attribute the failure to the notify layer (RCM-68).
+
+import { SlackNotifyError, redactSecrets } from "./errors.js";
 
 /**
  * @typedef {import('../providers/epic.js').EpicOffer} Offer
@@ -52,7 +57,7 @@ export async function notifyOffer(
   if (!webhookUrl) {
     return {
       ok: false,
-      error: new Error("SLACK_WEBHOOK_URL is not configured"),
+      error: new SlackNotifyError("SLACK_WEBHOOK_URL is not configured"),
     };
   }
 
@@ -67,23 +72,25 @@ export async function notifyOffer(
       body: JSON.stringify(payload),
     });
   } catch (err) {
+    const safeMsg = redactSecrets(err?.message ?? err, webhookUrl);
     logger.error(
-      `[notifier] Slack POST threw for "${offer?.title ?? "unknown"}": ${err?.message ?? err}`,
+      `[notifier] Slack POST threw for "${offer?.title ?? "unknown"}": ${safeMsg}`,
     );
     return {
       ok: false,
-      error: err instanceof Error ? err : new Error(String(err)),
+      error: new SlackNotifyError(safeMsg, { cause: err }),
     };
   }
 
   if (!response.ok) {
     const body = await safeReadText(response);
+    const safeBody = redactSecrets(body, webhookUrl).slice(0, 300);
     logger.error(
-      `[notifier] Slack POST failed for "${offer?.title ?? "unknown"}": HTTP ${response.status} ${body.slice(0, 300)}`,
+      `[notifier] Slack POST failed for "${offer?.title ?? "unknown"}": HTTP ${response.status} ${safeBody}`,
     );
     return {
       ok: false,
-      error: new Error(`Slack returned HTTP ${response.status}`),
+      error: new SlackNotifyError(`Slack returned HTTP ${response.status}`),
     };
   }
 
